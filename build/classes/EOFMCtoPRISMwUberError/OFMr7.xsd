@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="eofms">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="constant"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="userdefinedtype"/>
+        <xs:element maxOccurs="unbounded" ref="humanoperator"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="userdefinedtype">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="name" use="required">
+            <xs:simpleType>
+              <xs:restriction base="xs:ID">
+                <xs:pattern value="t([0-9]|[a-z]|[A-Z])*"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="constant">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:extension base="xs:string">
+          <xs:attribute name="name" use="required">
+            <xs:simpleType>
+              <xs:restriction base="xs:ID">
+                <xs:pattern value="c([0-9]|[a-z]|[A-Z])*"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
+          <xs:attributeGroup ref="typeoftype"/>
+        </xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="typeoftype">
+    <xs:attribute name="userdefinedtype">
+      <xs:simpleType>
+        <xs:restriction base="xs:IDREF">
+          <xs:pattern value="t.*"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="basictype" type="xs:string"/>
+  </xs:attributeGroup>
+  <xs:element name="humanoperator">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="inputvariable"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="inputvariablelink"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="localvariable"/>
+        <xs:element maxOccurs="unbounded" ref="humanaction"/>
+        <xs:element maxOccurs="unbounded" ref="eofm"/>
+      </xs:sequence>
+      <xs:attribute name="name" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:ID">
+            <xs:pattern value="p([0-9]|[a-z]|[A-Z])*"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="inputvariable">
+    <xs:complexType>
+      <xs:attribute name="name" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:ID">
+            <xs:pattern value="i([0-9]|[a-z]|[A-Z])*"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attributeGroup ref="typeoftype"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="inputvariablelink">
+    <xs:complexType>
+      <xs:attribute name="link" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:IDREF">
+            <xs:pattern value="i.*"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="localvariable">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="initialvalue"/>
+      </xs:sequence>
+      <xs:attribute name="name" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:ID">
+            <xs:pattern value="l([0-9]|[a-z]|[A-Z])*"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attributeGroup ref="typeoftype"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="initialvalue" type="xs:string"/>
+  <xs:element name="humanaction">
+    <xs:complexType>
+      <xs:attribute name="name" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:ID">
+            <xs:pattern value="h([0-9]|[a-z]|[A-Z])*"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+      <xs:attribute name="behavior" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="autoreset"/>
+            <xs:enumeration value="toggle"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="eofm">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="activity"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="activity">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element ref="precondition"/>
+          <xs:element ref="completioncondition"/>
+          <xs:element ref="repeatcondition"/>
+        </xs:choice>
+        <xs:element ref="decomposition"/>
+      </xs:sequence>
+      <xs:attribute name="name" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:ID">
+            <xs:pattern value="a([0-9]|[a-z]|[A-Z])*"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="decomposition">
+    <xs:complexType>
+      <xs:choice>
+        <xs:group ref="activitydecompostion"/>
+        <xs:group ref="actiondecomposition"/>
+      </xs:choice>
+      <xs:attribute name="operator" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:token">
+            <xs:enumeration value="optor_seq"/>
+            <xs:enumeration value="optor_par"/>
+            <xs:enumeration value="or_seq"/>
+            <xs:enumeration value="or_par"/>
+            <xs:enumeration value="and_seq"/>
+            <xs:enumeration value="and_par"/>
+            <xs:enumeration value="ord"/>
+            <xs:enumeration value="xor"/>
+            <xs:enumeration value="optor_seq"/>
+            <xs:enumeration value="optor_par"/>
+            <xs:enumeration value="or_seq"/>
+            <xs:enumeration value="or_par"/>
+            <xs:enumeration value="and_seq"/>
+            <xs:enumeration value="and_par"/>
+            <xs:enumeration value="ord"/>
+            <xs:enumeration value="xor"/>
+            <xs:enumeration value="sync"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:group name="activitydecompostion">
+    <xs:sequence>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element ref="activity"/>
+        <xs:element ref="activitylink"/>
+      </xs:choice>
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="activitydecompostion">
+    <xs:attribute name="operator" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="optor_seq"/>
+          <xs:enumeration value="optor_par"/>
+          <xs:enumeration value="or_seq"/>
+          <xs:enumeration value="or_par"/>
+          <xs:enumeration value="and_seq"/>
+          <xs:enumeration value="and_par"/>
+          <xs:enumeration value="ord"/>
+          <xs:enumeration value="xor"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:group name="actiondecomposition">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" ref="action"/>
+    </xs:sequence>
+  </xs:group>
+  <xs:element name="action">
+    <xs:complexType>
+      <xs:simpleContent>
+        <xs:restriction base="xs:anyType">
+          <xs:simpleType>
+            <xs:union memberTypes="assignlocalvariable">
+              <xs:simpleType>
+                <xs:restriction base="xs:token">
+                  <xs:length value="0"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:union>
+          </xs:simpleType>
+          <xs:attribute name="humanaction">
+            <xs:simpleType>
+              <xs:restriction base="xs:IDREF">
+                <xs:pattern value="h.*"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
+          <xs:attribute name="localvariable">
+            <xs:simpleType>
+              <xs:restriction base="xs:IDREF">
+                <xs:pattern value="l.*"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:attribute>
+        </xs:restriction>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="actiondecomposition">
+    <xs:attribute name="operator" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:token">
+          <xs:enumeration value="optor_seq"/>
+          <xs:enumeration value="optor_par"/>
+          <xs:enumeration value="or_seq"/>
+          <xs:enumeration value="or_par"/>
+          <xs:enumeration value="and_seq"/>
+          <xs:enumeration value="and_par"/>
+          <xs:enumeration value="ord"/>
+          <xs:enumeration value="xor"/>
+          <xs:enumeration value="sync"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:element name="activitylink">
+    <xs:complexType>
+      <xs:attribute name="link" use="required">
+        <xs:simpleType>
+          <xs:restriction base="xs:IDREF">
+            <xs:pattern value="a.*"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:attribute>
+    </xs:complexType>
+  </xs:element>
+  <xs:attributeGroup name="performhumanaction">
+    <xs:attribute name="humanaction" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:IDREF">
+          <xs:pattern value="h.*"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:simpleType name="assignlocalvariable">
+    <xs:restriction base="xs:string"/>
+  </xs:simpleType>
+  <xs:attributeGroup name="assignlocalvariable">
+    <xs:attribute name="localvariable" use="required">
+      <xs:simpleType>
+        <xs:restriction base="xs:IDREF">
+          <xs:pattern value="l.*"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:element name="precondition" type="xs:string"/>
+  <xs:element name="completioncondition" type="xs:string"/>
+  <xs:element name="repeatcondition" type="xs:string"/>
+</xs:schema>
