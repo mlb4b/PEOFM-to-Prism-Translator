@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar 
+  xmlns="http://relaxng.org/ns/structure/1.0"
+  xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+  datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+    
+    <start>
+        <element name="eofms">
+            <zeroOrMore>
+                <choice>
+                    <ref name="constant"></ref>
+                    <ref name="userdefinedtype"></ref>
+                </choice>
+            </zeroOrMore>
+            <oneOrMore>
+                <ref name="humanoperator"></ref>
+            </oneOrMore>
+        </element>
+    </start>
+    
+    <define name="cpcsum">
+        <optional>
+            <element name="cpcsum">
+                <data type="integer">
+                    <param name="pattern">-[1-9]|[0-7]</param>
+                </data>
+            </element>
+        </optional>
+    </define>
+    
+    <define name="userdefinedtype">
+        <element name="userdefinedtype">
+            <attribute name="name">
+                <data type="ID">
+                    <param name="pattern">t([0-9]|[a-z]|[A-Z])*</param>
+                </data>
+            </attribute>
+            <data type="string"></data>
+        </element>
+    </define>
+    
+    <define name="constant">
+        <element name="constant">
+            <attribute name="name">
+                <data type="ID">
+                    <param name="pattern">c([0-9]|[a-z]|[A-Z])*</param>
+                </data>
+            </attribute>
+            <zeroOrMore>
+                <attribute name="parameter">                                <!-- this was added so that functional mappings can be defined as constants (this is how it is done in SAL) -->
+                    <data type="string"></data>
+                </attribute>
+            </zeroOrMore>
+            <ref name="typeoftype"></ref>
+            <data type="string"></data>
+        </element>
+    </define>
+    
+    <define name="typeoftype">
+        <choice>
+            <attribute name="userdefinedtype">
+                <data type="IDREF">
+                    <param name="pattern">t.*</param>
+                </data>
+            </attribute>
+            <attribute name="basictype">
+                <data type="string"></data>
+            </attribute>
+        </choice>
+    </define>
+    
+    <define name="humanoperator">
+        <element name="humanoperator">
+            <attribute name="name">
+                <data type="ID">
+                    <param name="pattern">p([0-9]|[a-z]|[A-Z])*</param>
+                </data>
+            </attribute>
+            <ref name="cpcsum"></ref>
+            <zeroOrMore>
+                <ref name="inputvariable"></ref>
+            </zeroOrMore>
+            <zeroOrMore>    
+                <ref name="inputvariablelink"></ref>
+            </zeroOrMore>
+            <zeroOrMore>
+                <ref name="localvariable"></ref>
+            </zeroOrMore>
+            <oneOrMore>
+                    <ref name="humanaction"></ref>
+            </oneOrMore>
+            <zeroOrMore>
+                <ref name="eofm"></ref>                                     <!-- This was changed from oneormore since all EOFMs can be shared -->
+            </zeroOrMore>
+        </element>
+    </define>
+    
+    <define name="inputvariable">
+        <element name="inputvariable">
+            <attribute name="name">
+                <data type="ID">
+                    <param name="pattern">i([0-9]|[a-z]|[A-Z])*</param>
+                </data>
+            </attribute>
+            <ref name="typeoftype"></ref>
+        </element>
+    </define>
+    
+    <define name="inputvariablelink">
+        <element name="inputvariablelink">
+            <attribute name="link">
+                <data type="IDREF">
+                    <param name="pattern">i.*</param>
+                </data>
+            </attribute>
+        </element>
+    </define>
+    
+    <define name="localvariable">
+        <element name="localvariable">
+            <attribute name="name">
+                <data type="ID">
+                    <param name="pattern">l([0-9]|[a-z]|[A-Z])*</param>
+                </data>
+            </attribute>
+            <ref name="typeoftype"></ref>
+            <element name="initialvalue">
+                <data type="string"></data>
+            </element>
+        </element>
+    </define>
+    
+    <define name="humanaction">
+        <element name="humanaction">
+            <attribute name="name">
+                <data type="ID">
+                    <param name="pattern">h([0-9]|[a-z]|[A-Z])*</param>
+                </data>
+            </attribute>
+            <choice>
+                <attribute name="behavior">
+                    <choice>
+                        <value>autoreset</value>
+                        <value>toggle</value>
+                    </choice>
+                </attribute>
+                <ref name="setvalueaction"></ref>                                   <!-- we are still using the set value action option -->
+            </choice>
+        </element>
+    </define>
+    
+    <define name="setvalueaction">                                                  <!-- definition for set value action-->
+        <attribute name="behavior">
+            <value>setvalue</value>
+        </attribute>
+        <ref name="typeoftype"></ref>
+        <element name="initialvalue">
+            <data type="string"></data>
+        </element>
+    </define>
+    
+    <define name="eofm">
+        <element name="eofm">
+            <optional>
+                <attribute name="replacedby">
+                    <data type="IDREF">
+                        <param name="pattern">a.*</param>
+                    </data>
+                </attribute>
+            </optional>
+            <ref name="activity"/>
+        </element>
+    </define>
+    
+    <define name="activity">
+        <element name="activity">
+            <attribute name="name">
+                <data type="ID">
+                    <param name="pattern">a([0-9]|[a-z]|[A-Z])*</param>
+                </data>
+            </attribute>
+            <ref name="cpcsum"></ref>
+            <interleave>
+                <optional>
+                    <ref name="precondition"></ref>
+                </optional>
+                <optional>
+                    <ref name="completioncondition"></ref>
+                </optional>
+                <optional>
+                    <ref name="repeatcondition"></ref>
+                </optional>
+            </interleave>
+            <element name="decomposition">
+                <choice>
+                    <ref name="activitydecompostion"></ref>
+                    <ref name="actiondecomposition"></ref>
+                </choice>
+            </element>
+        </element>
+    </define>
+    
+    <define name="activitydecompostion">
+        <attribute name="operator">
+            <choice>
+                <value>optor_seq</value>
+                <value>optor_par</value>
+                <value>or_seq</value>
+                <value>or_par</value>
+                <value>and_seq</value>
+                <value>and_par</value>
+                <value>ord</value>
+                <value>xor</value>
+            </choice>
+        </attribute>
+        <oneOrMore>
+            <choice>
+                <ref name="activity"></ref>
+                <ref name="activitylink"></ref>
+            </choice>
+        </oneOrMore>
+    </define>
+    
+    <define name="actiondecomposition">
+        <attribute name="operator">
+            <choice>
+                <value>optor_seq</value>
+                <value>optor_par</value>
+                <value>or_seq</value>
+                <value>or_par</value>
+                <value>and_seq</value>
+                <value>and_par</value>
+                <value>ord</value>
+                <value>xor</value>
+            </choice>
+        </attribute>
+        <oneOrMore>
+            <element name="action">
+                <choice>
+                    <ref name="performhumanaction"></ref>
+                    <ref name="assignlocalvariable"></ref>
+                </choice>
+                <ref name="cpcsum"></ref>
+                <data type="string"></data>
+            </element>
+        </oneOrMore>
+    </define>
+    
+    <define name="activitylink">
+        <element name = "activitylink">
+            <attribute name="link">
+                <data type="IDREF">
+                    <param name="pattern">a.*</param>
+                </data>
+            </attribute>
+        </element>
+    </define>
+    
+    <define name="performhumanaction">
+        <attribute name="humanaction">
+            <data type="IDREF" >
+                <param name="pattern">h.*</param>
+            </data>
+        </attribute>                                            <!-- this is for setting a value -->
+    </define>
+    
+    <define name="assignlocalvariable">
+        <attribute name="localvariable">
+            <data type="IDREF" >
+                <param name="pattern">l.*</param>
+            </data>
+        </attribute>
+    </define>
+
+    <define name="precondition">
+        <element name="precondition"><data type="string"></data></element>
+    </define>
+    <define name="completioncondition">
+        <element name="completioncondition"><data type="string"></data></element>
+    </define>
+    <define name="repeatcondition">
+        <element name="repeatcondition"><data type="string"></data></element>
+    </define>
+    
+</grammar>
